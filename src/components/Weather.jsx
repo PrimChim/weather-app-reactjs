@@ -15,12 +15,29 @@ const Weather = () => {
 
     async function handleSearch() {
         setLoading(true);
-        const response = await fetch(url);
+        try{
 
-        const data = await response.json();
+            const response = await fetch(url);
 
-        setWeatherData(data);
-        setLoading(false);
+            if(!response.ok){
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setWeatherData(data);
+
+        }catch(error){
+
+            console.log("Error while fetching data:", error)
+            setWeatherData(null);
+
+        } finally{
+
+            setLoading(false);
+
+        }
+
+
     };
 
     function handleKeyDown(event){
@@ -31,18 +48,21 @@ const Weather = () => {
 
     return (
         <>
-            <div className='container p-4 rounded bg-success'>
+            <div className=' p-4 rounded bg-success d-flex flex-column align-items-center'>
                 <h1 className='text-white'>This is Weather App 1</h1>
-                <div className="">
-                    <input type="text" className='rounded p-2' placeholder='City Name' onChange={handleChange} onKeyDown={handleKeyDown}/>
-                    <button className="btn btn-danger p-2" onClick={handleSearch}>Search</button>
+                <div className="input-group w-50">
+                    <input type="text" className='form-control' placeholder='City Name' onChange={handleChange} onKeyDown={handleKeyDown}/>
+                    <button className="btn btn-danger p-2 input-group-text" onClick={handleSearch}>Search</button>
                 </div>
                 {loading && <p className="text-white">Loading...</p>}
                 {weatherData &&
-                    <div className="text-white mt-3">
+                    <div className="text-white mt-3 bg-info bg-gradient w-25 rounded">
                         <h2>{weatherData.name}</h2>
-                        <p>Temperature: {(weatherData.main.temp -273).toFixed(2)}</p>
-                        <p>Weather: {weatherData.weather[0].description}</p>
+                        <p>{weatherData.weather[0].description}</p>
+                        <img src={`https://openweathermap.org/img/wn/${weatherData.weather[0].icon}@2x.png`} alt=""/>
+                        <p className="text fs-1">{(weatherData.main.temp -273).toFixed(2)} °</p>
+                        <p>{weatherData.main.humidity} g/m3</p>
+
                     </div>
                 }
             </div>
