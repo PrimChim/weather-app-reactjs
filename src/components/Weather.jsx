@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 
 const Weather = () => {
     const [city, setCity] = useState('');
     const [loading, setLoading] = useState(null);
     const [weatherData, setWeatherData] = useState(null);
+    const [longitude, setLongitude] = useState('');
+    const [latitude, setLatitude] = useState('');
 
     function handleChange(event) {
         setCity(event.target.value);
@@ -11,7 +13,7 @@ const Weather = () => {
 
     const apiKey = '793e5fa3eea08c66d4fb3a21b03672d6';
 
-    const url = 'https://api.openweathermap.org/data/2.5/weather?q=' + city + '&appid=' + apiKey;
+    let url = 'https://api.openweathermap.org/data/2.5/weather?q=' + city + '&appid=' + apiKey;
 
     async function handleSearch() {
         setLoading(true);
@@ -52,6 +54,9 @@ const Weather = () => {
         console.log(`Latitude : ${crd.latitude}`);
         console.log(`Longitude: ${crd.longitude}`);
         console.log(`More or less ${crd.accuracy} meters.`);
+
+        setLongitude(crd.longitude);
+        setLatitude(crd.latitude);
     }
 
     function errors(err) {
@@ -73,17 +78,30 @@ const Weather = () => {
                     if (result.state === "prompt") {
                         navigator.geolocation.getCurrentPosition(success, errors, options);
                     }
+                    if (result.state === "granted"){
+                        navigator.geolocation.getCurrentPosition(success,errors,options);
+                    }
+                    if (result.state === "denied"){
+                        alert("Please turn on location services for it to use current location service.")
+                        navigator.geolocation.getCurrentPosition(success,errors,options);
+                    }
                 })
         } else {
             alert("Geolocation is not supported in your browser.")
         }
     }, [])
 
+    function handleLocation(){
+        url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}`
+        handleSearch();
+    }
+
     return (
         <>
             <div className=' p-4 rounded bg-success d-flex flex-column align-items-center'>
                 <h1 className='text-white'>This is Weather App 1</h1>
                 <div className="input-group w-50">
+                    <button className="btn btn-primary p-2 input-group-text" onClick={handleLocation}>Current Location</button>
                     <input type="text" className='form-control' placeholder='City Name' onChange={handleChange} onKeyDown={handleKeyDown} />
                     <button className="btn btn-danger p-2 input-group-text" onClick={handleSearch}>Search</button>
                 </div>
